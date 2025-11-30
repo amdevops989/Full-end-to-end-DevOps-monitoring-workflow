@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: slack-test
+  namespace: monitoring
+  labels:
+    release: kube-prom-stack
+spec:
+  groups:
+    - name: slack-test-group
+      rules:
+        - alert: SlackTestAlert22
+          expr: vector(1)
+          for: 10s
+          labels:
+            severity: info
+          annotations:
+            summary: "Slack test alert"
+            description: "If you see this, Slack works"

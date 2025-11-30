@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: frontend-gateway
+  namespace: demo
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https-frontend
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: localdev-credential
+      hosts:
+        - "frontend.localdev.me"

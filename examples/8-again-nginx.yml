@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stg
+  labels:
+    istio-injection: "enabled"
+    release: "kube-prom-stack"
+---
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: nginx
+#   namespace: stg
+#   labels:
+#     app: nginx
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: nginx
+#   template:
+#     metadata:
+#       labels:
+#         app: nginx
+#     spec:
+#       containers:
+#         - name: nginx
+#           image: nginx:1.25
+#           ports:
+#             - containerPort: 80
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nginx
+#   namespace: stg
+#   labels:
+#     app: nginx
+#     monitoring: "prometheus"   # optional if you want to target via ServiceMonitor
+# spec:
+#   selector:
+#     app: nginx
+#   ports:
+#     - name: http
+#       port: 80
+#       targetPort: 80
+#   type: ClusterIP
+# ---
+# # =========================
+# # 4️⃣ Service exposing Envoy sidecar metrics
+# # =========================
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nginx-envoy
+#   namespace: stg
+#   labels:
+#     app: nginx
+# spec:
+#   selector:
+#     app: nginx
+#     # istio: monitor
+#   ports:
+#     - name: http-envoy-prom
+#       port: 15090
+#       targetPort: 15090
+#       protocol: TCP
+
+# ---
+# # =========================
+# # 5️⃣ Istio Gateway
+# # =========================
+# apiVersion: networking.istio.io/v1beta1
+# kind: Gateway
+# metadata:
+#   name: nginx-gateway
+#   namespace: stg
+# spec:
+#   selector:
+#     istio: gateway
+#   servers:
+#     - port:
+#         number: 80
+#         name: http
+#         protocol: HTTP
+#       hosts:
+#         - "*"
+# ---
+# # =========================
+# # 6️⃣ Istio VirtualService
+# # =========================
+# apiVersion: networking.istio.io/v1beta1
+# kind: VirtualService
+# metadata:
+#   name: nginx-vs
+#   namespace: stg
+# spec:
+#   hosts:
+#     - "testo11.local"
+#   gateways:
+#     - nginx-gateway
+#   http:
+#     - match:
+#         - uri:
+#             prefix: "/"
+#       route:
+#         - destination:
+#             host: nginx
+#             port:
+#               number: 80
+# ---
+
+# # =========================
+# # 7️⃣ ServiceMonitor for Envoy
+# # =========================
+# apiVersion: monitoring.coreos.com/v1
+# kind: ServiceMonitor
+# metadata:
+#   name: nginx-servicemonitor
+#   namespace: monitoring
+#   labels:
+#     prometheus: main
+# spec:
+#   selector:
+#     matchLabels:
+#       app: nginx
+#       # istio: monitor
+#   namespaceSelector:
+#     matchNames:
+#       - stg
+#   endpoints:
+#     - port: http-envoy-prom
+#       path: /stats/prometheus
+#       interval: 15s
+#       honorLabels: true
